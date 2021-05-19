@@ -1,0 +1,30 @@
+{
+    "test_duration": 3374, 
+    "file_name": "", 
+    "topic_name": [
+        "feature"
+    ], 
+    "assignee": ["chengjiangbo"], 
+    "frequency": 1, 
+    "city": "\u4e0a\u6d77", 
+    "data_link": "", 
+    "test_type": 1, 
+    "localization_result": {}, 
+    "master": false, 
+    "test_time_start": 1603329551, 
+    "control_result": {}, 
+    "data_type": "raw", 
+    "origin_record_tag": [], 
+    "ap_result": {}, 
+    "test_time_end": 1603332925, 
+    "aws_endpoint": "http://10.5.41.234:80", 
+    "task_id": 30000, 
+    "data_file": [], 
+    "test_mileage": 18.232316, 
+    "test_car_id": "CN-100", 
+    "global_tag": [], 
+    "issue_id": [
+        "feature"
+    ], 
+    "route": "o2l"
+}

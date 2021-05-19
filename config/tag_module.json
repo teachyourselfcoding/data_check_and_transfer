@@ -1,0 +1,98 @@
+{
+  "take_over": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 3,
+    "case_type": 2,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "Compaction_line": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 1,
+    "case_type": 6,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "Other_unreasonable_driving_behavior": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 1,
+    "case_type": 6,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "Emergency_brake": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 2,
+    "case_type": 3,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "false_brake": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 2,
+    "case_type": 6,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "unreasonable_lane_change": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 1,
+    "case_type": 6,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "abnormal_steering_wheel": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 1,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "reckless_line_change": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 1,
+    "case_type": 6,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "Slalom": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 1,
+    "case_type": 6,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "Unreasonable_speed": {
+    "level_name": "DPC",
+    "log_type": 1,
+    "tagging_module": 1,
+    "case_type": 6,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "traffic_light_detection_error": {
+    "level_name": "SP",
+    "log_type": 1,
+    "tagging_module": 1,
+    "case_type": 6,
+    "front_time": 15,
+    "behind_time": 25
+  },
+  "static_car_has_velocity": {
+    "level_name": "3D-Perception",
+    "log_type": 1,
+    "tagging_module": 1,
+    "case_type": 6,
+    "front_time": 15,
+    "behind_time": 25
+  }
+}
+

@@ -1,0 +1,55 @@
+Metadata-Version: 2.1
+Name: cnspy-script-utils
+Version: 0.1.1
+Summary: Utilty scripts and functions.
+Home-page: https://github.com/aau-cns/cnspy_script_utils/
+Author: Roland Jung
+Author-email: roland.jung@aau.at
+License: UNKNOWN
+Project-URL: Bug Tracker, https://github.com/aau-cns/cnspy_script_utils/issues
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: GNU General Public License v3 (GPLv3)
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown
+
+# cnspy_script_utils
+
+A package holding useful scripts, that cannot be associated to any other (dangling code, that is used in different places). 
+
+
+Most important functions:
+1. [get_list_of_dir(directory)](./directory_info.py)
+1. [get_list_of_files(directory)](./directory_info.py)
+1. [string_to_list(string, pattern)](./string_parser.py)
+1. [string_to_dict(string, pattern)](./string_parser.py)
+
+## Installation
+
+Install the current code base from GitHub and pip install a link to that cloned copy
+```
+git clone https://github.com/aau-cns/cnspy_script_utils.git
+cd cnspy_script_utils
+pip install -e .
+```
+
+## Dependencies
+
+It is part of the [cnspy eco-system](https://github.com/aau-cns/cnspy_eco_system_test) of the [cns-github](https://github.com/aau-cns) group.  
+Main dependencies are:
+
+* [re]()
+* [sys]()
+* [os]()
+
+
+## License
+
+Software License Agreement (GNU GPLv3  License), refer to the LICENSE file.
+
+*Sharing is caring!* - [Roland Jung](https://github.com/jungr-ait)  
+
+

@@ -1,0 +1,10 @@
+{
+    "check_result": true, 
+    "data_link": "s3://sh40_fieldtest_master/2020_07/master/raw_data/2020_07_23/CN017/2020_07_23_10_01_38_AutoCollect", 
+    "data_type": "raw", 
+    "file_name": "2020_07_23_10_01_38_AutoCollect", 
+    "file_size": 2256, 
+    "master": true, 
+    "segment_file": {}
+}
+

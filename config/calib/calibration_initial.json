@@ -1,0 +1,56 @@
+{
+    "calibration_initial": {
+        "version": "0.2",
+        "vehicle_param": {
+            "vehicle_type": "EP30",
+            "car_width": 1.84,
+            "front_bumper_to_front_wheel_axis_distance": 0.8
+        },
+        "bumper_points": [
+            {
+                "x": -0.9,
+                "y": 1.02
+            },
+            {
+                "x": 0.9,
+                "y": 1.02
+            }
+        ],
+        "environment_param": {
+            "board_height": 1.4,
+            "grid_size_facorty": 0.18,
+            "board_to_front_wheel_axis_distance_factory": 5.0,
+            "grid_size_field": 0.18,
+            "board_to_front_wheel_axis_distance_field": 3.0
+        },
+        "camera_param_initial": {
+            "camera_height": 1.4,
+            "camera_to_front_wheel_axis_distance": 0.7,
+            "camera_to_right_A_pillar_distance": 0.8,
+            "camera_to_left_A_pillar_distance": 0.67,
+            "camera_fov_x": 93,
+            "camera_fov_y": 50,
+            "vanishing_pt_x_initial": 610.5,
+            "vanishing_pt_y_initial": 381,
+            "blinding_area_distance_initial": 2.492,
+            "blinding_area_pixel_height_initial": 820
+        },
+        "lane_h_matrix_initial": {
+            "x": {
+                "x": -0.006471989890307162,
+                "y": -0.0007641146875037994,
+                "z": 4.402715000418352
+            },
+            "y": {
+                "x": -7.975533115674836e-05,
+                "y": 0.0062165863657965715,
+                "z": -6.727976920890716
+            },
+            "z": {
+                "x": 6.572588550326231e-05,
+                "y": -0.0028595390943385603,
+                "z": 1.0
+            }
+        }
+    }
+}

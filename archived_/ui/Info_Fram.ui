@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Info_Form</class>
+ <widget class="QWidget" name="Info_Form">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1300</width>
+    <height>914</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>进度显示</string>
+  </property>
+  <widget class="QLabel" name="SSD_label">
+   <property name="geometry">
+    <rect>
+     <x>430</x>
+     <y>100</y>
+     <width>100</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>当前操作路径：</string>
+   </property>
+  </widget>
+  <widget class="QTextBrowser" name="SSD_browser">
+   <property name="geometry">
+    <rect>
+     <x>540</x>
+     <y>100</y>
+     <width>391</width>
+     <height>31</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Detail_label">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>250</y>
+     <width>81</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>任务详情：</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="Start_btn">
+   <property name="geometry">
+    <rect>
+     <x>640</x>
+     <y>150</y>
+     <width>81</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>开始</string>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="Detail_table">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>279</y>
+     <width>1280</width>
+     <height>291</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>480</width>
+     <height>200</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>1280</width>
+     <height>300</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QLabel" name="SSD_loaded_label">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>30</y>
+     <width>91</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>已加载硬盘：</string>
+   </property>
+  </widget>
+  <widget class="QTextBrowser" name="SSD_loaded_browser">
+   <property name="geometry">
+    <rect>
+     <x>120</x>
+     <y>30</y>
+     <width>230</width>
+     <height>191</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QTableWidget" name="Log_table">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>650</y>
+     <width>1280</width>
+     <height>240</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="Log_label">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>610</y>
+     <width>51</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>日志：</string>
+   </property>
+   <property name="textFormat">
+    <enum>Qt::AutoText</enum>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

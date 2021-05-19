@@ -1,0 +1,9 @@
+{
+   "FT_PARAMETER":
+   {
+      "ft_dm_judgement_distance": 40.0,
+      "comfortable_acceleration": 3.0,
+      "green_flash_defaule_time": 5.5,
+      "yellow_default_time": 3
+   }
+}

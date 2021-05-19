@@ -1,0 +1,19 @@
+{
+    "calibration_property": {
+        "comm_property": {
+            "zmq_pub_addr": "tcp://*:66666",
+            "zmq_sub_addr": "",
+            "sub_interests": [],
+            "zmq_req_addr": "",
+            "zmq_rep_addr": "tcp://*:66668",
+            "http_ip": "",
+            "http_port": -1,
+            "http_as_host_port": -1,
+            "zmq_sndhwm": 3
+        },
+        "input_type": 1,
+        "video_path": "/data",
+        "input_image_set": "/root/qinchen_data/FCW_image_set/AVERAGED/2019_10_29_15_42_7/manual_write_images/image%05d.png",
+        "sensor_config_path": "../config/car_camera/CN-015_fpga/"
+    }
+}

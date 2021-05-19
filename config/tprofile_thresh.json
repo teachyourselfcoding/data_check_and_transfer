@@ -1,0 +1,43 @@
+{
+    "modules": {
+        "lidar_detection": {
+            "time_thresh": 58.8193,
+            "stddev_thresh": 6.8306
+        },
+        "decision_planning": {
+            "time_thresh": 15.2302,
+            "stddev_thresh": 0.0
+        },
+        "prediction": {
+            "time_thresh": 50.8956,
+            "stddev_thresh": 0.0
+        },
+        "sensor_fusion": {
+            "time_thresh": 7.6519,
+            "stddev_thresh": 0.0
+        }
+    },
+    "sensors": {
+        "camera": {
+            "frame_thresh": 10.4145,
+            "stddev_thresh": 0.0
+        },
+        "radar": {
+            "frame_thresh": 2307626.7576,
+            "stddev_thresh": 1562892.8042
+        },
+        "canbus": {
+            "frame_thresh": 1206301.1818,
+            "stddev_thresh": 945414.6139
+        },
+        "ins": {
+            "frame_thresh": 2.0000,
+            "stddev_thresh": 0.0
+        },
+        "lidar": {
+            "frame_thresh": 10.0008,
+            "stddev_thresh": 0.1584
+        }
+    }
+}
+

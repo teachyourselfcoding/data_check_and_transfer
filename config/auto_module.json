@@ -1,0 +1,53 @@
+{
+  "supply_label_contrast":{
+    "红灯": "traffic_light_problem",
+    "黄灯": "traffic_light_problem",
+    "绿灯": "traffic_light_problem",
+    "黄闪": "traffic_light_problem",
+    "绿闪": "traffic_light_problem",
+    "黑灯": "traffic_light_problem",
+    "视频不清晰": "traffic_light_problem",
+    "超出感知范围": "traffic_light_problem",
+    "红绿灯被遮挡": "traffic_light_problem",
+    "红绿灯故障": "traffic_light_problem",
+    "红绿灯场景变化":"traffic_light_problem",
+    "误检": "object_problem",
+    "漏检": "object_problem",
+    "物体尺寸异常": "object_problem"
+  },
+  "label_to_number": {
+    "红灯": 1,
+    "黄灯": 2,
+    "绿灯": 3,
+    "黄闪": 4,
+    "绿闪": 5,
+    "黑灯": 6,
+    "视频不清晰": 7,
+    "超出感知范围": 8,
+    "红绿灯被遮挡":9,
+    "红绿灯故障":10,
+    "红绿灯场景变化":11,
+    "误检": 0,
+    "漏检": 1,
+    "物体尺寸异常": 2
+  },
+  "local_threshold": {
+    "longitudinal_jump": 100,
+    "lateral_jump": 70,
+    "heading_jump": 90,
+    "large_longitudinal_error": 1.5,
+    "large_lateral_error": 1,
+    "large_heading_error": 3,
+    "large_time_gap": 1,
+    "error_list": [
+      "max_longitudinal_jump",
+      "max_lateral_jump",
+      "max_heading_jump",
+      "max_longitudinal_error",
+      "max_lateral_error",
+      "max_heading_error",
+      "max_time_gap"
+    ]
+  }
+}
+

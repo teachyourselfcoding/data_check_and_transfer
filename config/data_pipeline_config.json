@@ -1,0 +1,41 @@
+{
+    "check_file": {
+        "adas_eval.bag": 1,
+        "dmppcl.bag": 4,
+        "screen_cast/screen.mp4": 1,
+        "sensors_record/canbus.dump.rec": 0.2,
+        "sensors_record/ins.dump.rec": 0.2
+    },
+    "senseauto_path": "/home/sensetime/ws/unified-senseauto/",
+    "end_point_30": "http://10.5.31.110:80",
+    "end_point_40": "http://10.5.41.234:80",
+    "end_point_21": "http://172.20.21.250:80",
+    "evaluation": true,
+    "segment_and_upload": {
+        "collection_segment": false,
+        "collection_upload": true, 
+        "feature_segment": true,
+        "feature_upload": true, 
+        "master_segment": true,
+        "master_upload": true,
+        "camera_timestamp": true
+    },
+    "include_segment":{
+        "topic_name":["AUTODRIVE-6695_aggregator_online_test","AUTODRIVE-7265-fault_vehicle"],
+        "test_car_id": ["BUS-001"],
+        "issue_id": ["AUTODRIVE-6814","AUTODRIVE-6933","AUTODRIVE-7543","AUTODRIVE-7809","AUTODRIVE-7999"],
+        "test_type": [3],
+        "task_id": [4703,4845,6000]
+    },
+    "upload_path": {
+        "collection": "s3://sz21_data_collection/",
+        "feature": "s3://sz21_fieldtest_feature/",
+        "master": "s3://sz21_fieldtest_master/",
+        "adas": "s3://sz21_adas/",
+        "false": "s3://sz21_fieldtest_dataset/"
+    },
+    "segment_level": {
+
+    }
+}
+

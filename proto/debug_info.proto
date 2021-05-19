@@ -1,0 +1,51 @@
+// Copyright (C) 2020 by SenseTime Group Limited. All rights reserved.
+// Shengfa Zhu <zhushengfa@senseauto.com>
+
+syntax = "proto2";
+
+package senseAD.pp;
+
+message ParticleFilterDebugInfo {
+    optional double p_yeild = 1;
+    optional double x_avg = 2;
+    optional double y_avg = 3;
+    optional double v_yield_avg = 4;
+    optional double v_not_yield_avg = 5;
+    optional double theta_avg = 6;
+    optional double intension_avg = 7;
+    optional double tgt_velocity_avg = 8;
+    optional double x_obser = 9;
+    optional double y_obser = 10;
+    optional double v_obser = 11;
+    optional double theta_obser = 12;
+    optional string timestamp = 13;
+}
+
+message EstimationDebugInfo {
+    repeated ParticleFilterDebugInfo filter_infos = 1;
+}
+
+enum ObstacleTagProto {
+    YIELD = 1;
+    SURPASS = 2;
+    NUDGE_LEFT = 11;
+    NUDGE_RIGHT = 12;
+    UNDEFINED = 100;
+}
+
+message RangeProto {
+    required double start = 1;
+    required double end = 2;
+}
+
+message TimeTagProto {
+    required ObstacleTagProto longi_tag = 1;
+    required RangeProto longi_time_range = 2;
+    required ObstacleTagProto lateral_tag = 3;
+    required RangeProto lateral_time_range = 4;
+}
+
+message TimeTagMapProto {
+    repeated int32 id_seq = 1;
+    repeated TimeTagProto tag_seq = 2;
+}

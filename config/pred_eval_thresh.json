@@ -1,0 +1,22 @@
+{
+    "veh": {
+      "AverageDisplacementError": 10.0,
+      "FinalDisplacementError": 20,
+      "Point2lineDistanceSummary": 50
+    },
+    "cyc": {
+      "AverageDisplacementError": 5,
+      "FinalDisplacementError": 10,
+      "Point2lineDistanceSummary": 20
+    },
+    "ped": {
+      "AverageDisplacementError": 3,
+      "FinalDisplacementError": 5,
+      "Point2lineDistanceSummary": 10
+    },
+    "oth": {
+      "AverageDisplacementError": 5,
+      "FinalDisplacementError": 10,
+      "Point2lineDistanceSummary": 20
+    }
+}
