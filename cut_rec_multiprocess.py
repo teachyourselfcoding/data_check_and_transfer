@@ -40,8 +40,6 @@ def GetMatchedFilePaths(data_dir,
     import fnmatch
     print("checkpoint2.7")
     for f in os.listdir(data_dir):
-        print("checkpoint2.8")
-        print(f)
         current_path = get_path(os.path.normpath(data_dir), f)
         print(current_path)
         if os.path.isdir(current_path) and recursive:
@@ -190,6 +188,42 @@ def CutVideosAndTxt(video_files, timestamp_files, segment_list):
         CutTimestamp(timestamp_file, point_list)
         print (getTime()+"\033[1;32m [INFO]\033[0m Cuting video files completly\n")
 
+def CutBasler(screen_files, screen_txts, segment_list):
+    point_list = []
+
+    for i in range(len(screen_txts)):
+        screen_file = screen_files[i]
+        screen_txt = screen_txts[i]
+        # judge the start and end
+        for seg_point in segment_list:
+            time_point = seg_point["time_point"]
+            front_duration = seg_point["front_duration"]+5
+            behind_duration = seg_point["behind_duration"]
+            output_dir = seg_point["output_dir"]
+            if not os.path.exists(output_dir):
+                os.mkdir(output_dir)
+
+            start_index, end_index,start_time,end_time = JudgeTheStartAndEndOfBasler(
+                screen_txt, time_point, front_duration, behind_duration)
+            if start_index == 0 or end_index == 0:
+                continue
+
+            point_list.append({"start_index": start_index,
+                               "end_index": end_index,
+                               "start_time":start_time.to_sec(),
+                               "end_time": end_time.to_sec(),
+                               "output_dir": output_dir})
+
+        try:
+            # cut videos
+            print("Cuttingbaslervideolog")
+            print(screen_file, point_list, screen_txt)
+            CutVideos(screen_file, point_list)
+            # cut timestamp
+            CutTimestamp(screen_txt, point_list)
+        except Exception as e:
+            print('cut video error')
+
 def CutScreenCast(screen_files, screen_txts, segment_list):
     point_list = []
 
@@ -202,7 +236,9 @@ def CutScreenCast(screen_files, screen_txts, segment_list):
             front_duration = seg_point["front_duration"]+5
             behind_duration = seg_point["behind_duration"]
             output_dir = seg_point["output_dir"]+'/screen_cast'
+            print(output_dir)
             if not os.path.exists(output_dir):
+                print("checkpoint52")
                 os.mkdir(output_dir)
 
             start_index, end_index,start_time,end_time = JudgeTheStartAndEndOfScreencast(
@@ -218,11 +254,54 @@ def CutScreenCast(screen_files, screen_txts, segment_list):
 
         try:
             # cut videos
+            print("screencast videocutting")
+            print(screen_file, point_list, screen_txt)
             CutVideos(screen_file, point_list)
             # cut timestamp
             CutTimestamp(screen_txt, point_list)
         except Exception as e:
             print('cut video error')
+
+def JudgeTheStartAndEndOfBasler(timestamp_file, time_point, front_duration,
+                               behind_duration):
+    start_point = time_point - front_duration * 1000000
+    end_point = time_point + behind_duration * 1000000
+    suggested_start = Time(int(start_point / 1000000), start_point % 1000000 * 1000)
+    suggested_end = Time(int(end_point / 1000000), end_point % 1000000 * 1000)
+    suggested_point = Time(int(time_point / 1000000), time_point % 1000000 * 1000)
+
+    timestamps_lines = ReadFile(timestamp_file)
+    timestamps = []
+    for i in range(len(timestamps_lines)):
+        line = timestamps_lines[i]
+        line = line.strip('\n').strip().split(", ")
+        if len(line) < 2:
+            print(line)
+            continue
+        frame = ast.literal_eval(line[0])
+        sec = int(Decimal(line[1][:10]))
+        nsec = int(Decimal(line[1][10:] + "0" * (9 - len(line[1][10:]))))
+        timestamps.append((i, Time(sec, nsec)))
+    if len(timestamps) <= 0:
+        sys.exit(1)
+    stamp_start = timestamps[0][1]
+    stamp_end = timestamps[len(timestamps) - 1][1]
+
+    if stamp_start > suggested_point or stamp_end < suggested_point:
+        print("video time_point={} is not in [{}, {}]".format(
+            time_point, stamp_start, stamp_end))
+        return (0,0,0,0)
+    start = max(stamp_start, suggested_start)
+    end = min(stamp_end, suggested_end)
+
+    start_index = 0
+    end_index = 0
+    for i in range(len(timestamps)):
+        if timestamps[i][1] < start:
+            start_index = i
+        if timestamps[i][1] < end:
+            end_index = i
+    return start_index, end_index,start-stamp_start,end-stamp_start
 
 def JudgeTheStartAndEndOfScreencast(timestamp_file, time_point, front_duration,
                                behind_duration):
@@ -694,6 +773,10 @@ def main(data_dir,segment_list):
     pattern = "port_*"
     print("checkpoint46")
     print(data_dir)
+
+    basler_video_file = GetMatchedFilePaths(data_dir, "port_0*", [".avi"], True)
+    basler_txt_file = GetMatchedFilePaths(data_dir, "port_0*", [".txt"], True)
+
     video_files = GetMatchedFilePaths(data_dir,
                                       pattern,
                                       formats=[".avi",".h264", "mp4"],
@@ -715,6 +798,7 @@ def main(data_dir,segment_list):
     screen_cast_path =  os.path.join(data_dir,'screen_cast')
     print("checkpoint49")
     print(screen_cast_path)
+
     if os.path.exists(screen_cast_path):
         print("checkpoint50")
         screen_files = GetMatchedFilePaths(screen_cast_path,
@@ -724,6 +808,7 @@ def main(data_dir,segment_list):
         screen_txts = GetMatchedFilePaths(screen_cast_path,
                                           formats=[".txt"],
                                           recursive=False)
+
     for timestamp_file in timestamp_files:
         print(" ---------- {}".format(timestamp_file))
     print("checkpoint51")
@@ -760,6 +845,11 @@ def main(data_dir,segment_list):
     pool2.apply_async(CopyConfigCacheAndLogs, args=(data_dir, segment_list))
     pool2.close()
     pool2.join()
+
+    print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Basler Video .........\n")
+    if len(basler_video_file) > 0 and len(basler_txt_file) > 0:
+        CutBasler(basler_video_file, basler_txt_file, segment_list)
+
 
     print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Screencast Video .........\n")
     if len(screen_files) > 0 and len(screen_txts) > 0:
