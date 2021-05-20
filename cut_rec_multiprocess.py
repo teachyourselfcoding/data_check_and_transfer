@@ -621,19 +621,33 @@ def CutHmiFile(hmi_file,segment_list):
 def CopyConfigCacheAndLogs(data_dir, segment_list):
     print (getTime()+"\033[1;32m [INFO]\033[0m copying config and log .........\n")
     for seg_point in segment_list:
-        output_dir=seg_point["output_dir"]
-        log_dir_list = ["cache","config","versions","simulator_scenario","cv22"]
+        output_dir_path= seg_point["output_dir"]
+        log_dir_list = ["cache","config","versions","simulator_scenario"]
         for log_dir in log_dir_list:
             try:
-                log_dir_path = os.path.join(output_dir,log_dir)
+                log_dir_path = os.path.join(output_dir_path,log_dir)
                 if os.path.isdir(log_dir_path):
                     shutil.rmtree(log_dir_path)
-                if os.path.exists(os.path.join(data_dir,log_dir)):
-                    shutil.copytree(os.path.join(data_dir,log_dir), log_dir_path)
+                if os.path.exists(os.path.join(data_dir, log_dir)):
+                    shutil.copytree(os.path.join(data_dir, log_dir), log_dir_path)
             except Exception as e:
                 print (getTime()+"\033[1;31m [ERROR]\033[0m copy cache or config failed ")
+
+        cv22_path = os.path.join(data_dir,'cv22')
+        cv22_output_path = os.path.join(output_dir_path,'cv22')
+        cv22_copy_list = ["canlog", "config"]
+        for cv22_dir in cv22_copy_list:
+            try:
+                cv22_dir_path = os.path.join(cv22_output_path,cv22_dir)
+                if os.path.isdir(cv22_dir_path):
+                    shutil.rmtree(cv22_dir_path)
+                if os.path.exists(os.path.join(cv22_path, cv22_dir)):
+                    shutil.copytree(os.path.join(cv22_path, cv22_dir), cv22_dir_path)
+            except Exception as e:
+                print (getTime()+"\033[1;31m [ERROR]\033[0m copy cv22 failed ")
+
     print (getTime()+"\033[1;32m [INFO]\033[0m copying config and log completly\n")
-    CutSimulatorScenario(data_dir, segment_list)
+    # CutSimulatorScenario(data_dir, segment_list)
 
 
 def CutSimulatorScenario(data_dir, point_list):
@@ -685,9 +699,9 @@ def main(data_dir,segment_list):
                                       formats=[".avi",".h264", "mp4"],
                                       recursive=False)
     for video_file in video_files:
-        print(" ---------- {}".format(video_file))
+        print(" ---------- {}".format(video_file)) #2021_05_07_20_22_12_AutoCollect/port_0_camera_0_2021_5_7_19_36_1.avi
     print("checkpoint47")
-    timestamp_files = GetMatchedFilePaths(data_dir,
+    timestamp_files = GetMatchedFilePaths(data_dir, # 2021_05_07_20_22_12_AutoCollect/port_0_camera_0_2021_5_7_19_36_1.txt
                                           pattern, [".txt"],
                                           recursive=False)
     print("checkpoint48")
@@ -695,7 +709,7 @@ def main(data_dir,segment_list):
                                       "@*", [".hmi"],
                                       recursive=False)
     for hmi_file in hmi_files:
-        print(" ---------- {}".format(hmi_file))
+        print(" ---------- {}".format(hmi_file)) # did not find hmi file
     screen_files=[]
     screen_txts=[]
     screen_cast_path =  os.path.join(data_dir,'screen_cast')
@@ -717,9 +731,6 @@ def main(data_dir,segment_list):
                                     formats=[".rec"],
                                     recursive=False)
 
-
-
-
     rec_files = copy.deepcopy(rec_files_ori)
 
     for rec_file in rec_files_ori:
@@ -731,32 +742,45 @@ def main(data_dir,segment_list):
         except:
             print (getTime()+"\033[1;31m [ERROR]\033[0m move 0-size rec failed ")
     print("checkpoint52")
+
     dpc_files = GetMatchedFilePaths(data_dir,
                                     formats=[".bag"],
                                     recursive=False)
     for dpc_file in dpc_files:
         print(" ---------- {}".format(dpc_file))
 
-    pool1 = multiprocessing.Pool(processes=3)
+    pool1 = multiprocessing.Pool(processes=12)
     pool1.apply_async(CutRecs, args=(rec_files, segment_list))
     pool1.apply_async(CutDpcs, args=(dpc_files, segment_list))
     pool1.close()
     pool1.join()
-    CopyConfigCacheAndLogs(data_dir, segment_list)
 
+    pool2 = multiprocessing.Pool(processes=12)
+    # CopyConfigCacheAndLogs(data_dir, segment_list)
+    pool2.apply_async(CopyConfigCacheAndLogs, args=(data_dir, segment_list))
+    pool2.close()
+    pool2.join()
+
+    print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Screencast Video .........\n")
     if len(screen_files) > 0 and len(screen_txts) > 0:
         CutScreenCast(screen_files, screen_txts, segment_list)
-    pool = multiprocessing.Pool(processes=4)
+
+    pool = multiprocessing.Pool(processes=12)
     if len(video_files) > 0 and os.path.exists(video_files[0]):
         print("checkpoint")
         # pool.apply_async(CutVideosAndTxt, args=(video_files, timestamp_files, segment_list))
     if len(hmi_files) > 0 and os.path.exists(hmi_files[0]):
+        print(getTime() + "\033[1;32m [INFO]\033[0m Cutting HMI Video .........\n")
         pool.apply_async(CutHmiFile, args=(hmi_files[0], segment_list))
     pool.close()
     pool.join()
+    print("checkpoint51.5")
+    print(data_dir,segment_list)
 
+    print(getTime() + "\033[1;32m [INFO]\033[0m Cutting ADAS Video .........\n")
     adas_pipeline.adasMainProcess(data_dir, segment_list)
     print("checkpoint52.1")
+    print(data_dir)
     print(segment_list)
 
 

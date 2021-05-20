@@ -185,7 +185,12 @@ class DataCollectionUpload():
         main pipeline for collected data check & segment & upload
         :param upload: whether upload
         '''
+
+        start_time = time.time()
+        print(getTime()+"\033[1;32m [INFO]\033[0m Starting EVERYTHING")
         self.mainSegment(self.file_list, upload)
+        print(getTime() + "\033[1;32m [INFO]\033[0m Finished everything , consuming {:.3f}s".format(
+            time.time() - start_time))
         # for dir_name in self.file_list:
         #     print("checkpoint35")
         #     print(dir_name)
@@ -234,7 +239,7 @@ class DataCollectionUpload():
 
             ## generate evluation result with different module
             if tag_data["test_type"] == 1 and self.config_["evaluation"]:
-                pool1 = multiprocessing.Pool(processes=3)
+                pool1 = multiprocessing.Pool(processes=12)
                 pool1.apply_async(generate_evaluation_result.generateLocalizationEval, args=(dir_path,self.config_,))
                 pool1.close()
                 pool1.join()
@@ -485,7 +490,8 @@ class DataCollectionUpload():
             if reult_0_1 == 0:
                 false_reason.append(file_name)
         pattern = "port_*"
-        video_files = self.getMatchedFilePaths(dir_path, pattern, formats=[".avi",".h264"], recursive=True)
+
+        video_files = self.getMatchedFilePaths(dir_path, pattern, formats=[".avi",".h264", "mp4"], recursive=True)
 
         for video_name in video_files:
             print("checkpoint23")
