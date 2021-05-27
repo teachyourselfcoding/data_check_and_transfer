@@ -10,11 +10,18 @@ from datetime import datetime
 import multiprocessing
 import cut_rec_multiprocess
 from tools.read_and_write_json import loadTag,saveTag,getTime
-from moviepy.editor import concatenate_videoclips,VideoFileClip
-# from cut_rec_multiprocess \
-#     import GetMatchedFilePaths,JudgeTheStartAndEndOfVideo,CutTimestamp,CutDpcs
 
 segment_list = []
+
+class Timestamp:
+    def __init__(self, index, header_bytes, unknown_buf, timestamp, payload_bytes, payload):
+        self.index = index
+        self.header_bytes = header_bytes
+        self.unknown_buf = unknown_buf
+        self.timestamp = timestamp
+        self.payload_bytes = payload_bytes
+        self.payload = payload
+
 class TimeReader:
     def __init__(self, filename):
         self.header_bytes = 0
@@ -41,11 +48,44 @@ class TimeReader:
         buf = self.f_handle.read(8)
         payload_bytes, = struct.unpack('Q', buf)
         return timestamp, payload_bytes
+    def read_frm_header_new(self):
+        buf = self.f_handle.read(1)
+        # header_bytes = buf
+        header_bytes = struct.unpack("B", buf)
+        buf = self.f_handle.read(7)
+        unknown_buf = buf
+        buf = self.f_handle.read(8)
+        # timestamp = buf
+        timestamp, = struct.unpack('Q', buf)
+        buf = self.f_handle.read(8)
+        # payload_bytes = buf
+        payload_bytes, = struct.unpack('Q', buf)
+        # header_bytes = self.f_handle.read(24)
+        return header_bytes, unknown_buf, timestamp, payload_bytes
 
     def read_frm(self):
         timestamp, payload_bytes = self.read_frm_header()
         payload = self.f_handle.read(payload_bytes)
         return timestamp, payload
+
+    def read_frm_new(self):
+        header_bytes, unknown_buf, timestamp, payload_bytes = self.read_frm_header_new()
+        payload = self.f_handle.read(payload_bytes)
+        return header_bytes, unknown_buf, timestamp, payload_bytes, payload
+
+    def get_all_list(self):
+        time_list = []
+        index = 1
+        while True:
+            try:
+                header_bytes, unknown_buf, time_stamp, payload_bytes, payload = self.read_frm_new()
+                new_timestamp = Timestamp(index, header_bytes, unknown_buf, time_stamp, payload_bytes, payload)
+                time_list.append(new_timestamp)
+                index = index + 1
+            except Exception as e:
+                # logging.exception(e)
+                break
+        return time_list
 
     def get_time_list(self):
         time_list = []
@@ -526,14 +566,26 @@ def cutAdasVideos(video_list, point_list):
         writer.release()
     cap.release()
 
+# def CutTimestamp(point_list, segment_list, timestamp_bin_file):
+#
+#     f = open('/home/trajic/Desktop/data/myfile.txt', 'w')
+#     count = 0
+#     for timestamp in timestamp_bin_file:
+#         line = "".join([str(count), ", ", timestamp])
+#         count = count +1
+#         f.write(line)
+#     f.close()
+#
 
-def cutVideoAndTxt(video_list, segment_list, timestamp_bin_file_path):
+
+
+def cutVideoAndTxt(video_list, segment_list, timestamp_bin_file):
     print("test1")
     print(segment_list)
     print(getTime()+"\033[1;32m [INFO]\033[0m  Cutting video files......")
     start_time = time.time()
 
-    new_bin = TimeReader(str(timestamp_bin_file_path))
+    new_bin = TimeReader(str(timestamp_bin_file))
     timestamp_file = new_bin.get_time_list()
 
     point_list = []
@@ -563,13 +615,13 @@ def cutVideoAndTxt(video_list, segment_list, timestamp_bin_file_path):
         print(output_video_path)
 
         point_list.append({"start_index": start_index, "end_index": end_index, "output_dir": output_video_path})
-        timestamp_list.append({"start_index": start_index,
-                               "end_index": end_index,
-                               "output_dir": os.path.join(output_dir, video_tmp_path)})
+        # timestamp_list.append({"start_index": start_index,
+        #                        "end_index": end_index,
+        #                        "output_dir": os.path.join(output_dir, video_tmp_path)})
 
-        timebin_list.append({"start_index": time_point - front_duration*1000000,
-                               "end_index": time_point + behind_duration*1000000,
-                               "output_dir": os.path.join(output_dir, video_tmp_path)})
+        timebin_list.append({"start_index": start_index - front_duration * 60,
+                             "end_index": end_index + behind_duration * 60,
+                             "output_dir": os.path.join(output_dir, video_tmp_path)})
     print("\033[1;32m checkpoint1.1.4\033[0m ")
     print(point_list)
     print(timebin_list)
@@ -579,7 +631,7 @@ def cutVideoAndTxt(video_list, segment_list, timestamp_bin_file_path):
     print(video_list, point_list)
     # cutAdasVideos(video_list, point_list)
     cutAdasVideosMultiprocess(video_list, point_list)
-    # CutTimestamp(os.path.join(merged_path,"NOR_stream0.txt"), timestamp_list)
+    cut_rec_multiprocess.CutBin(timestamp_bin_file, timebin_list, point_list)
 
     print(getTime()+"\033[1;32m [INFO]\033[0m Cuting video files completly, consuming {:.3f}s".format(time.time()-start_time))
 
@@ -609,13 +661,14 @@ def adasMainProcess(dir_path,segment_list):
     print("checkpoint6.1")
     print(timestamp_bin_filepath)
     cutVideoAndTxt(video_list_1, segment_list, timestamp_bin_filepath[0])
-    moveAdasVideosAndBin(adas_path, video_list_1, segment_list)
+    # moveAdasVideosAndBin(adas_path, video_list_1, segment_list)
 
     return segment_list
 
 if __name__ == "__main__":
     dir_path = '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect'
-
+    point_list = [{'start_index': 2234, 'end_index': 87673, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/night_without_lamp/2021_05_07_19_37_02/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 1328, 'end_index': 3128, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/sunnyday/2021_05_07_19_37_05/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 2879, 'end_index': 87239, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/highway/2021_05_07_19_37_13/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 3092, 'end_index': 77191, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/Straight_road/2021_05_07_19_37_17/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 77312, 'end_index': 81152, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_19_57_54/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 86141, 'end_index': 87941, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/city/2021_05_07_20_00_39/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 86862, 'end_index': 88662, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/night_with_lamp/2021_05_07_20_00_51/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 98402, 'end_index': 101042, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_03_45/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 101133, 'end_index': 101673, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/uphill/2021_05_07_20_04_31/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 101885, 'end_index': 102665, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/downhill/2021_05_07_20_04_43/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 105787, 'end_index': 108187, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_05_48/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 120062, 'end_index': 123782, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_09_46/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 129520, 'end_index': 130300, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_12_24/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}, {'start_index': 159016, 'end_index': 161836, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_20_36/cv22/Sliced_ADAS/Sliced_ADAS.mp4'}]
+    time_bin_list = [{'start_index': 1620387422891880, 'end_index': 1620387422977320, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/night_without_lamp/2021_05_07_19_37_02/cv22/Sliced_ADAS'}, {'start_index': 1620387425790800, 'end_index': 1620387425792600, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/sunnyday/2021_05_07_19_37_05/cv22/Sliced_ADAS'}, {'start_index': 1620387433651880, 'end_index': 1620387433736240, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/highway/2021_05_07_19_37_13/cv22/Sliced_ADAS'}, {'start_index': 1620387437192880, 'end_index': 1620387437266980, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/Straight_road/2021_05_07_19_37_17/cv22/Sliced_ADAS'}, {'start_index': 1620388674200880, 'end_index': 1620388674204720, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_19_57_54/cv22/Sliced_ADAS'}, {'start_index': 1620388839360800, 'end_index': 1620388839362600, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/city/2021_05_07_20_00_39/cv22/Sliced_ADAS'}, {'start_index': 1620388851381800, 'end_index': 1620388851383600, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/night_with_lamp/2021_05_07_20_00_51/cv22/Sliced_ADAS'}, {'start_index': 1620389025716880, 'end_index': 1620389025719520, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_03_45/cv22/Sliced_ADAS'}, {'start_index': 1620389071234880, 'end_index': 1620389071235420, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/uphill/2021_05_07_20_04_31/cv22/Sliced_ADAS'}, {'start_index': 1620389083754880, 'end_index': 1620389083755660, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/downhill/2021_05_07_20_04_43/cv22/Sliced_ADAS'}, {'start_index': 1620389148793880, 'end_index': 1620389148796280, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_05_48/cv22/Sliced_ADAS'}, {'start_index': 1620389386986880, 'end_index': 1620389386990600, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_09_46/cv22/Sliced_ADAS'}, {'start_index': 1620389544608880, 'end_index': 1620389544609660, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_12_24/cv22/Sliced_ADAS'}, {'start_index': 1620390036212880, 'end_index': 1620390036215700, 'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_20_36/cv22/Sliced_ADAS'}]
     segment_list = [{'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/night_without_lamp/2021_05_07_19_37_02', 'time_point': 1620387422892000, 'front_duration': 2, 'behind_duration': 1422, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/sunnyday/2021_05_07_19_37_05', 'time_point': 1620387425792000, 'front_duration': 20, 'behind_duration': 10, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/highway/2021_05_07_19_37_13', 'time_point': 1620387433652000, 'front_duration': 2, 'behind_duration': 1404, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/Straight_road/2021_05_07_19_37_17', 'time_point': 1620387437193000, 'front_duration': 2, 'behind_duration': 1233, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_19_57_54', 'time_point': 1620388674201000, 'front_duration': 2, 'behind_duration': 62, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/city/2021_05_07_20_00_39', 'time_point': 1620388839362000, 'front_duration': 20, 'behind_duration': 10, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/night_with_lamp/2021_05_07_20_00_51', 'time_point': 1620388851383000, 'front_duration': 20, 'behind_duration': 10, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_03_45', 'time_point': 1620389025717000, 'front_duration': 2, 'behind_duration': 42, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/uphill/2021_05_07_20_04_31', 'time_point': 1620389071235000, 'front_duration': 2, 'behind_duration': 7, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/downhill/2021_05_07_20_04_43', 'time_point': 1620389083755000, 'front_duration': 2, 'behind_duration': 11, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_05_48', 'time_point': 1620389148794000, 'front_duration': 2, 'behind_duration': 38, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_09_46', 'time_point': 1620389386987000, 'front_duration': 2, 'behind_duration': 60, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_12_24', 'time_point': 1620389544609000, 'front_duration': 2, 'behind_duration': 11, 'log_type': 0}, {'output_dir': '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect_slice/ADAS/The_crossroads/2021_05_07_20_20_36', 'time_point': 1620390036213000, 'front_duration': 2, 'behind_duration': 45, 'log_type': 0}]
     video_list_2 = ['/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/normal/Amba_stream0_20210507193623_1_70.mp4', '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/video/mp4-0/1/Amba_stream0_20210507194124_1_71.mp4', '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/video/mp4-0/1/Amba_stream0_20210507194623_1_72.mp4', '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/video/mp4-0/1/Amba_stream0_20210507195124_1_73.mp4', '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/video/mp4-0/1/Amba_stream0_20210507195623_1_74.mp4', '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/video/mp4-0/1/Amba_stream0_20210507200124_1_75.mp4', '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/video/mp4-0/1/Amba_stream0_20210507200624_1_76.mp4', '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/video/mp4-0/1/Amba_stream0_20210507201124_1_77.mp4', '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/video/mp4-0/1/Amba_stream0_20210507201624_1_78.mp4', '/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect/cv22/video/mp4-0/1/Amba_stream0_20210507202124_1_79.mp4']
     # merged_path = '/home/trajic/Desktop/data/2021_05_07_22_02_10_AutoCollect/cv22/merged_file'
