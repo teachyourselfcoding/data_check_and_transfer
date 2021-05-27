@@ -27,25 +27,18 @@ def GetMatchedFilePaths(data_dir,
                         formats=[".h264"],
                         recursive=False):
     files = []
-
-    print("checkpoint2.5")
-    print(data_dir)
-    print(formats)
     data_dir = os.path.normpath(os.path.abspath(data_dir))
-    print("checkpoint2.6")
+
     import fnmatch
-    print("checkpoint2.7")
+
     for f in os.listdir(data_dir):
         current_path = get_path(os.path.normpath(data_dir), f)
-        print(current_path)
         if os.path.isdir(current_path) and recursive:
             files += GetMatchedFilePaths(current_path, pattern, formats,
                                          recursive)
         elif fnmatch.fnmatch(f,
                              pattern) and os.path.splitext(f)[-1] in formats:
             files.append(current_path)
-    print("checkpoint2.9")
-    print(files)
     return files
 
 
@@ -81,48 +74,29 @@ def CutBin(timestamp_bin_file, bin_list, point_list):
     new_bin = TimeReader(str(timestamp_bin_file))
     timestamp_file = new_bin.get_all_list()
 
-    print(len(timestamp_file))
     for seg_point in bin_list:
         output_dir = seg_point["output_dir"]
         start_index = seg_point["start_index"]
         end_index = seg_point["end_index"]
         output_timestamp_file = output_dir + "/sliced.bin"
-        print("checkpoint cutting timestamp")
-        print(output_timestamp_file)
-        print(start_index, end_index)
 
         file = open(output_timestamp_file, "wb")
         file.write(struct.pack('I', 0))
-        print("checkpoint_bloop")
 
-        print(len(timestamp_file))
         for timestamp in timestamp_file:
             # print(timestamp.timestamp)
             if start_index <= timestamp.index <= end_index:
-                print("checkpoint!!!!!!!!")
 
                 file.write(struct.pack('B', timestamp.header_bytes[0]))
-                print(timestamp.header_bytes[0])
-                print(struct.pack('B', timestamp.header_bytes[0]))
-                # file.write(timestamp.header_bytes)
+
                 file.write(timestamp.unknown_buf)
-                # file.write(timestamp.timestamp)
-                # file.write(timestamp.payload_bytes)
 
                 file.write(struct.pack('Q', timestamp.timestamp))
-                print(timestamp.timestamp)
-                print(struct.pack('Q', timestamp.timestamp))
 
                 file.write(struct.pack('Q', timestamp.payload_bytes))
-                print(timestamp.payload_bytes)
-                print(struct.pack('Q', timestamp.payload_bytes))
 
                 file.write(timestamp.payload)
-                print(timestamp.payload)
 
-        print("newlistlength")
-
-    print(bin_list)
 
 
 def CutTimestamp(timestamp_file, point_list):
@@ -202,6 +176,9 @@ def CutVideoWithMpeg(video_path, point_list):
 
 
 def CutBasler(screen_files, screen_txts, segment_list):
+
+    print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Basler Video .........\n")
+
     point_list = []
 
     for i in range(len(screen_txts)):
@@ -239,6 +216,9 @@ def CutBasler(screen_files, screen_txts, segment_list):
 
 
 def CutScreenCast(screen_files, screen_txts, segment_list):
+
+    print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Screencast Video .........\n")
+
     point_list = []
 
     for i in range(len(screen_txts)):
@@ -268,13 +248,13 @@ def CutScreenCast(screen_files, screen_txts, segment_list):
 
         try:
             # cut videos
-            print("screencast videocutting")
-            print(screen_file, point_list, screen_txt)
+            print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Screencast Video .........\n")
             CutVideos(screen_file, point_list)
             # cut timestamp
             CutTimestamp(screen_txt, point_list)
+
         except Exception as e:
-            print('cut video error')
+            print (getTime()+"\033[1;31m [ERROR]\033[0m While cutting screencast video ")
 
 
 def JudgeTheStartAndEndOfBasler(timestamp_file, time_point, front_duration,
@@ -291,7 +271,6 @@ def JudgeTheStartAndEndOfBasler(timestamp_file, time_point, front_duration,
         line = timestamps_lines[i]
         line = line.strip('\n').strip().split(", ")
         if len(line) < 2:
-            print(line)
             continue
         frame = ast.literal_eval(line[0])
         sec = int(Decimal(line[1][:10]))
@@ -333,7 +312,6 @@ def JudgeTheStartAndEndOfScreencast(timestamp_file, time_point, front_duration,
         line = timestamps_lines[i]
         line = line.strip('\n').strip().split(", ")
         if len(line) < 2:
-            print(line)
             continue
         frame = ast.literal_eval(line[0])
         sec = int(Decimal(line[1][:10]))
@@ -364,22 +342,16 @@ def JudgeTheStartAndEndOfScreencast(timestamp_file, time_point, front_duration,
 # timestamp_file is a list!
 def JudgeTheStartAndEndOfVideo(timestamp_file, time_point, front_duration,
                                behind_duration):
-    print("\033[1;32m checkpoint1.1.2.1\033[0m ")
-    print((time_point, front_duration, behind_duration))
+
     start_point = time_point - front_duration * 1000000
     end_point = time_point + behind_duration * 1000000
     suggested_start = Time(int(start_point / 1000000), start_point % 1000000 * 1000)
     suggested_end = Time(int(end_point / 1000000), end_point % 1000000 * 1000)
     suggested_point = Time(int(time_point / 1000000), time_point % 1000000 * 1000)
-    print(start_point, suggested_start)
-    print(end_point, suggested_end)
-    print(time_point, suggested_point)
 
     # timestamps_lines = ReadFile(timestamp_file)
     timestamps_lines = timestamp_file
     timestamps = []
-    print("\033[1;32m checkpoint1.1.2.1.1\033[0m ")
-    print(timestamps_lines[0], type(timestamps_lines[0]))
 
     for i in range(len(timestamps_lines)):
         line = str(timestamps_lines[i])
@@ -393,16 +365,12 @@ def JudgeTheStartAndEndOfVideo(timestamp_file, time_point, front_duration,
         sec = int(Decimal(line[0][:10]))
         nsec = int(Decimal(line[0][10:] + "0" * (9 - len(line[0][10:]))))
         timestamps.append((i, Time(sec, nsec)))
-    print("\033[1;32m checkpoint1.1.2.1.2\033[0m ")
-    print(timestamps[0])
+
     if len(timestamps) <= 0:
         sys.exit(1)
     stamp_start = timestamps[0][1]
     stamp_end = timestamps[len(timestamps) - 1][1]
 
-    print("\033[1;32m checkpoint1.1.2.2\033[0m ")
-    print(stamp_start, suggested_start)
-    print(stamp_end, suggested_end)
 
     if stamp_start > suggested_point or stamp_end < suggested_point:
         print("video time_point={} is not in [{}, {}]".format(
@@ -413,21 +381,13 @@ def JudgeTheStartAndEndOfVideo(timestamp_file, time_point, front_duration,
 
     start_index = 0
     end_index = 0
-    print("\033[1;32m checkpoint1.1.2.3\033[0m ")
-    print(start, end)
-    print(len(timestamps))
-    print(timestamps[len(timestamps) - 1])
-    print(timestamps[0][1], timestamps[len(timestamps) - 1][1])
-    print(timestamps[87674])
+
     for i in range(len(timestamps)):
         if timestamps[i][1] < start:
             start_index = i
         if timestamps[i][1] < end:
             end_index = i
-    print(end - timestamps[end_index][1])
-    print(end - timestamps[end_index + 1][1])
-    print("\033[1;32m checkpoint1.1.2.4\033[0m ")
-    print(start_index, end_index, start - stamp_start, end - stamp_start)
+
     return start_index, end_index, start - stamp_start, end - stamp_start
 
 
@@ -450,15 +410,11 @@ def RecReadEntry(f, current_fd_pointer):
 
 
 def JudgeTheStartAndEndOfRec(rec_file, segment_list):
-    print("checkpoint65")
-    print(rec_file)
+
     start_end_index_list = []
     rec_fd = open(rec_file, 'rb')
-    print(rec_fd)
-    # execnet.call_python_version("2.7", "cut_rec_multiprocess", "RecReadHeader", rec_fd)
-    print("checkpoint65.1")
+
     RecReadHeader(rec_fd)
-    print("checkpoint65.2")
     header_len = rec_fd.tell()
     current_fd_pointer = header_len
 
@@ -480,7 +436,7 @@ def JudgeTheStartAndEndOfRec(rec_file, segment_list):
 
     stamp_start = data_segments[0][0]
     stamp_end = data_segments[len(data_segments) - 1][0]
-    print(stamp_start, stamp_end)
+
 
     for seg_point in segment_list:
 
@@ -514,7 +470,7 @@ def JudgeTheStartAndEndOfRec(rec_file, segment_list):
 
 
 def CutRec(rec_file, point_list):
-    print("checkpoint61")
+
     '''
     input:
         rec_file:str
@@ -563,13 +519,9 @@ def CutRecs(rec_files, segment_list):
     print(getTime() + "\033[1;32m [INFO]\033[0m Cuting rec files......")
 
     for rec_file in rec_files:
-        print("checkpoint58")
         point_list = []
         print('\n.................', rec_file)
         sd_index_list = JudgeTheStartAndEndOfRec(rec_file, segment_list)
-        print(len(sd_index_list), len(segment_list))
-        print(sd_index_list)
-        print(segment_list)
         if sd_index_list == [0, 0] or len(sd_index_list) != len(segment_list):
             continue
         for i in range(len(segment_list)):
@@ -582,7 +534,7 @@ def CutRecs(rec_files, segment_list):
             point_list.append({"start_index": start_index, "end_index": end_index, "output_dir": output_dir})
 
         CutRec(rec_file, point_list)
-    print(getTime() + "\033[1;32m [INFO]\033[0m Cuting rec files completly\n")
+    print(getTime() + "\033[1;32m [INFO]\033[0m Completed cutting of Rec files \n")
 
 
 def RecReadHeader(f):
@@ -619,7 +571,6 @@ def RecReadHeader(f):
         byte = f.read(header["extra_len"])
         header["extra_data"] = cur_topic["topic_data"] = "".join(
             byte.decode('ascii'))
-    print(header)
 
 
 def CutDpcbag(dpc_file, point_list):
@@ -631,13 +582,9 @@ def CutDpcbag(dpc_file, point_list):
 
     inbag = rosbag.bag.Bag(dpc_file)
     dpc_name = os.path.basename(dpc_file)
-    print(dpc_name)
-    print(dpc_file)
-    print("checkpoint59")
+
     output_list = []
     for seg_point in point_list:
-        print("checkpoint60")
-        print(seg_point)
         begin_secs = seg_point["begin_secs"]
         end_secs = seg_point["end_secs"]
         output_dir = os.path.join(seg_point["output_dir"], dpc_name)
@@ -675,13 +622,10 @@ def CutDpcbag(dpc_file, point_list):
 def CutDpcs(dpc_files, segment_list):
     print(getTime() + "\033[1;32m [INFO]\033[0m Cuting dpc bag......")
     point_list = []
-    print("checkpoint1008f")
-    print(dpc_files)
+
     for i in range(len(dpc_files)):
         dpc_file = dpc_files[i]
-        print("checkpoint1007")
-        print(dpc_file)
-        print(segment_list)
+
         # judge the start and end
         for seg_point in segment_list:
             time_point = seg_point["time_point"]
@@ -693,8 +637,8 @@ def CutDpcs(dpc_files, segment_list):
             end_secs = time_point / 1000000 + behind_duration
             point_list.append({"begin_secs": begin_secs, "end_secs": end_secs, "output_dir": output_dir})
         CutDpcbag(dpc_file, point_list)
-    print("checkpoint17")
-    print(getTime() + "\033[1;32m [INFO]\033[0m Cuting dpc bag completly\n")
+
+    print(getTime() + "\033[1;32m [INFO]\033[0m Completed cutting of Dpc files\n")
 
 
 def CutHmiFile(hmi_file, segment_list):
@@ -745,7 +689,7 @@ def CopyConfigCacheAndLogs(data_dir, segment_list):
             except Exception as e:
                 print(getTime() + "\033[1;31m [ERROR]\033[0m copy cv22 failed ")
 
-    print(getTime() + "\033[1;32m [INFO]\033[0m copying config and log completly\n")
+    print(getTime() + "\033[1;32m [INFO]\033[0m Completed copying of config cache and log\n")
     # CutSimulatorScenario(data_dir, segment_list)
 
 
@@ -775,54 +719,53 @@ def CutSimulatorScenario(data_dir, point_list):
             output_dir = seg_point["output_dir"]
             simulator_file = os.path.join(data_dir, 'simulator_scenario/simulator_scenario_log.bin')
             outout_dir_path = os.path.join(output_dir, 'simulator_scenario')
-            print("checkpoint54")
             razor_cmd = "{} 1 {} {} {} {} {}".format(
                 razor,
                 simulator_file, outout_dir_path,
                 str(int(time_point // 1000000)), str(front_duration + 15), str(behind_duration + 20))
-            print("checkpoint55")
+
             print(razor_cmd)
             os.system(razor_cmd)
-            print("checkpoint56")
+
     except Exception as e:
-        print("checkpoint57")
         print(getTime() + "\033[1;31m [ERROR]\033[0m cut simulator.bin failed ")
 
 
 def main(data_dir, segment_list):
-    pattern = "port_*"
-    print("checkpoint46")
-    print(data_dir)
 
-    basler_video_file = GetMatchedFilePaths(data_dir, "port_0*", [".avi"], True)
-    basler_txt_file = GetMatchedFilePaths(data_dir, "port_0*", [".txt"], True)
+    pattern = "port_*"
+    screen_files = []
+    screen_txts = []
+
+    basler_video_file = GetMatchedFilePaths(data_dir,
+                                            "port_0*",
+                                            [".avi"],
+                                            True)
+    basler_txt_file = GetMatchedFilePaths(data_dir,
+                                          "port_0*",
+                                          [".txt"],
+                                          True)
 
     video_files = GetMatchedFilePaths(data_dir,
                                       pattern,
                                       formats=[".avi", ".h264", "mp4"],
                                       recursive=False)
-    for video_file in video_files:
-        print(
-            " ---------- {}".format(video_file))  # 2021_05_07_20_22_12_AutoCollect/port_0_camera_0_2021_5_7_19_36_1.avi
-    print("checkpoint47")
+
     timestamp_files = GetMatchedFilePaths(data_dir,
                                           # 2021_05_07_20_22_12_AutoCollect/port_0_camera_0_2021_5_7_19_36_1.txt
                                           pattern, [".txt"],
                                           recursive=False)
-    print("checkpoint48")
     hmi_files = GetMatchedFilePaths(data_dir,
                                     "@*", [".hmi"],
                                     recursive=False)
-    for hmi_file in hmi_files:
-        print(" ---------- {}".format(hmi_file))  # did not find hmi file
-    screen_files = []
-    screen_txts = []
-    screen_cast_path = os.path.join(data_dir, 'screen_cast')
-    print("checkpoint49")
-    print(screen_cast_path)
 
+    screen_cast_path = os.path.join(data_dir, 'screen_cast')
+
+    rec_files_ori = GetMatchedFilePaths(os.path.join(data_dir, 'sensors_record'),
+                                        formats=[".rec"],
+                                        recursive=False)
     if os.path.exists(screen_cast_path):
-        print("checkpoint50")
+
         screen_files = GetMatchedFilePaths(screen_cast_path,
                                            formats=[".mp4"],
                                            recursive=False)
@@ -830,13 +773,19 @@ def main(data_dir, segment_list):
         screen_txts = GetMatchedFilePaths(screen_cast_path,
                                           formats=[".txt"],
                                           recursive=False)
+    dpc_files = GetMatchedFilePaths(data_dir,
+                                    formats=[".bag"],
+                                    recursive=False)
+
+    for video_file in video_files:
+        print(
+            " ---------- {}".format(video_file))  # 2021_05_07_20_22_12_AutoCollect/port_0_camera_0_2021_5_7_19_36_1.avi
+
+    for hmi_file in hmi_files:
+        print(" ---------- {}".format(hmi_file))  # did not find hmi file
 
     for timestamp_file in timestamp_files:
         print(" ---------- {}".format(timestamp_file))
-    print("checkpoint51")
-    rec_files_ori = GetMatchedFilePaths(os.path.join(data_dir, 'sensors_record'),
-                                        formats=[".rec"],
-                                        recursive=False)
 
     rec_files = copy.deepcopy(rec_files_ori)
 
@@ -848,31 +797,30 @@ def main(data_dir, segment_list):
                 rec_files.remove(rec_file)
         except:
             print(getTime() + "\033[1;31m [ERROR]\033[0m move 0-size rec failed ")
-    print("checkpoint52")
 
-    dpc_files = GetMatchedFilePaths(data_dir,
-                                    formats=[".bag"],
-                                    recursive=False)
     for dpc_file in dpc_files:
         print(" ---------- {}".format(dpc_file))
 
+    # Cutting of Recs files
     pool1 = multiprocessing.Pool(processes=12)
     pool1.apply_async(CutRecs, args=(rec_files, segment_list))
-    pool1.apply_async(CutDpcs, args=(dpc_files, segment_list))
     pool1.close()
     pool1.join()
 
+    # Cutting of Recs files
     pool2 = multiprocessing.Pool(processes=12)
-    # CopyConfigCacheAndLogs(data_dir, segment_list)
-    pool2.apply_async(CopyConfigCacheAndLogs, args=(data_dir, segment_list))
+    pool2.apply_async(CutDpcs, args=(dpc_files, segment_list))
     pool2.close()
     pool2.join()
 
-    print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Basler Video .........\n")
+    # CopyConfigCacheAndLogs(data_dir, segment_list)
+    pool3 = multiprocessing.Pool(processes=12)
+    pool3.apply_async(CopyConfigCacheAndLogs, args=(data_dir, segment_list))
+    pool3.close()
+    pool3.join()
+
     if len(basler_video_file) > 0 and len(basler_txt_file) > 0:
         CutBasler(basler_video_file, basler_txt_file, segment_list)
-
-    print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Screencast Video .........\n")
 
     pool = multiprocessing.Pool(processes=12)
     if len(screen_files) > 0 and len(screen_txts) > 0:
@@ -889,14 +837,9 @@ def main(data_dir, segment_list):
         pool.apply_async(CutHmiFile, args=(hmi_files[0], segment_list))
     pool.close()
     pool.join()
-    print("checkpoint51.5")
-    print(data_dir, segment_list)
 
-    print(getTime() + "\033[1;32m [INFO]\033[0m Cutting ADAS Video .........\n")
     adas_pipeline.adasMainProcess(data_dir, segment_list)
-    print("checkpoint52.1")
-    print(data_dir)
-    print(segment_list)
+
 
 
 if __name__ == "__main__":

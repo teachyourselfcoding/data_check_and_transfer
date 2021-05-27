@@ -191,10 +191,6 @@ class DataCollectionUpload():
         self.mainSegment(self.file_list, upload)
         print(getTime() + "\033[1;32m [INFO]\033[0m Finished everything , consuming {:.3f}s".format(
             time.time() - start_time))
-        # for dir_name in self.file_list:
-        #     print("checkpoint35")
-        #     print(dir_name)
-        #     self.mainSegment(dir_name, upload)
 
 
     def mainSegment(self, file_list, upload=False):
@@ -203,19 +199,14 @@ class DataCollectionUpload():
         :param upload: whether upload , default as False
         :return: o -> right ; 1-> error
         '''
-        print("checkpoint1000")
-        print(self.input_data_path)
+
         dir_path = self.input_data_path
         # dir_path = os.path.join(self.input_data_path, dir_name)
 
         # check the dir whether right
         check_result, self.false_reason = self.checkRec(dir_path)
-        print("calling checkRec")
-        for dir_name in file_list:
-            print("checkpoint1006")
-            print(dir_name)
-            print(dir_path)
 
+        for dir_name in file_list:
             # get the data-tag.json of checked dir
             tag_data = self.deterDirProperty(dir_path)
             if not check_result:
@@ -274,18 +265,12 @@ class DataCollectionUpload():
                 if None in self.tag_info['global_tag']:
                     self.tag_info['global_tag'].remove(None)
                 saveTag(dir_path, self.tag_info)
-            print("checkpoint29")
-            print(dir_path)
-            print(dir_name)
+
             if segment:
-                print("checkpoint30")
                 self.segmentPreprationCollection(dir_name)
-                print("checkpoint31")
-                print(dir_path)
-                print(dir_name)
-            print("checkpoint32")
+
             self.mainUpload(dir_path,upload)
-            print("checkpoint33")
+
         except Exception as e:
             print (traceback.format_exc())
             logger(1, str(e), LOG_FILE="upload_list/error.log")
@@ -454,7 +439,6 @@ class DataCollectionUpload():
     def checkRec(self, dir_path, slice=False):
         # looks through the following folders: cache, config, cv22, logs, screen_cast, sensor_logs
         #    sensors_record, timing logger, versions
-        print("checkpoint25")
         print(dir_path)
         '''
         :param dir_path: data path end with /
@@ -477,16 +461,9 @@ class DataCollectionUpload():
         if not os.path.exists(dir_path):
             return False, false_reason
         for file_name in self.check_file_name_list:
-            print(file_name)
             check_size = self.check_file_name_list[file_name]
-            print("checkpoint21")
-            print(dir_path)
             reult_0_1 = self.judgeFileSizeAndExist(dir_path, file_name, check_size=check_size)
-            print(file_name)
-            print(reult_0_1)
-            print("checkpoint22")
             check_result += reult_0_1
-            print(check_result)
             if reult_0_1 == 0:
                 false_reason.append(file_name)
         pattern = "port_*"
@@ -494,10 +471,7 @@ class DataCollectionUpload():
         video_files = self.getMatchedFilePaths(dir_path, pattern, formats=[".avi",".h264", "mp4"], recursive=True)
 
         for video_name in video_files:
-            print("checkpoint23")
             video_reult_0_1 = self.judgeFileSizeAndExist(dir_path='', file_name=video_name, check_size=1)
-            print("checkpoint24")
-            print(video_reult_0_1)
             video_result += video_reult_0_1
             if video_reult_0_1 == 0:
                 false_reason.append(file_name)
@@ -508,22 +482,15 @@ class DataCollectionUpload():
                 false_reason.append("cache")
 
         if check_result >= 4 and video_result > 0:
-            print("checkpoint27")
             print (getTime()+"\033[1;32m [INFO]\033[0m Dir:", dir_path, "is \033[1;32m correct\033[0m")
             return True, false_reason
         else:
-            print("checkpoint26")
-            print(check_result)
-            print(video_result)
             print (getTime()+"\033[1;31m [ERROR]\033[0m Dir:", dir_path, "is\033[1;31m wrong\033[0m")
             return False, false_reason
 
     def judgeFileSizeAndExist(self, dir_path, file_name, check_size=0.2):
         "as the function name descripted"
         judge_file = os.path.join(dir_path, file_name)
-        print("checkfilereleaseandsize is writing this :)")
-        print(file_name)
-        print(judge_file)
         if os.path.exists(judge_file) and \
                 round(os.path.getsize(judge_file) / float(1024 * 1024), 1) >= check_size:
                     # print("no error, filesize:")
@@ -531,9 +498,6 @@ class DataCollectionUpload():
                     return 1
         else:
             self.false_check_reasion.append(file_name)
-            print (getTime()+"\033[1;31m [ERROR]\033[0m file:", file_name, " is\033[1;31m wrong\033[0m\n")
-            print("filesize:")
-            print(os.path.getsize(judge_file))
             return 0
 
     def addEvalTag(self, dir_path):
@@ -574,23 +538,16 @@ class DataCollectionUpload():
             return []
 
     def segmentPreprationCollection(self, dir_name):
-        print("checkpoint37")
-        print(dir_name)
+
         if "origin_record_tag" in self.tag_info and self.tag_info["origin_record_tag"] != []:
-            print("checkpoint38")
             segment_point = self.tag_info["origin_record_tag"]
-            print(segment_point)
             # segment points have many sets of data (refer to 24 april data file)
         else:
-            print ("origin_record_tag error")
             return 0
-        print("checkpoint39")
         self.dataSegment(dir_name, segment_point)
 
     def dataSegment(self, dir_name, segment_point):
         "data segment pipeline"
-        print("checkpoint40")
-        print(self.tag_module_list)
         segment_list = []
         case_tagging_list = []
         prediction_tagging_list = []
@@ -635,9 +592,9 @@ class DataCollectionUpload():
             test_date = self.tag_info["test_date"]
             test_time = str(record_tag["start_format"].replace(":", "_"))
             segment_dir_name = ''.join([test_date, '_', test_time])
-            print("checkpoint41")
+
             output_path = ''.join([dir_path, '_slice/', level_name, '/', tag_name, '/', segment_dir_name])
-            print(output_path)
+
             if self.tag_info["issue_id"][0] != "repo_master" and \
                 (record_tag['tag_en'] == "take_over" or record_tag['tag_en'] == "Emergency_brake"):
                 segment_list.append({"output_dir": output_path,
@@ -663,9 +620,9 @@ class DataCollectionUpload():
 
 
             if not os.path.exists(output_path):
-                print("checkpoint42")
+
                 os.makedirs(output_path)
-            print("checkpoint43")
+
             task_id = '' if self.tag_info["issue_id"][0] == "repo_master" else str(self.tag_info["task_id"]) + '/'
 
             vehicle_id = self.tag_info["test_car_id"].replace("-", "")
@@ -694,11 +651,9 @@ class DataCollectionUpload():
             module_tag_data['aws_endpoint'] = self.end_point
             saveTag(store_path, module_tag_data, file_name='data-tag.json')
             self.generateLogDownloadFile(log_type, module_tag_data["raw_data_link"], output_path)
-        print("checkpoint44")
-        print(dir_path)
-        print(segment_list)
+
         cut_rec_multiprocess.main(dir_path, segment_list)
-        print("checkpoint45")
+
         if self.tag_info["test_type"] == 1:
             self.case_tagging.tagMain(self.tag_info["global_tag"],dir_path,case_tagging_list)
 
@@ -978,11 +933,11 @@ if __name__ == "__main__":
     if not os.path.exists(data_path):
         pass
         # raise ValueError("========== : {} does NOT exist".format(data_path))
-    command = ''.join(['sudo chown -R trajic ' , data_path])
-    os.system('echo %s | sudo -S %s' % ('Invincible49', 'sudo chown -R trajic "/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect"'))
+    command = ''.join(['sudo chown -R trajic ', data_path]) # Needs to be edited
+    os.system('echo %s | sudo -S %s' % ('Invincible49', 'sudo chown -R trajic "/home/trajic/Desktop/data/2021_05_07_20_22_12_AutoCollect"')) # Needs to be edited
     data_check_class = DataCollectionUpload(data_path)
     data_check_class.main(upload=True)
-    # os.system("bash /home/SENSETIME/caixinyu1/Desktop/data/script.sh ")
+
 
 
 
