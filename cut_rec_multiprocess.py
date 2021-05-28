@@ -1,5 +1,7 @@
 # coding=utf-8
 import os
+import time
+
 import cv2
 import ast
 import sys
@@ -108,7 +110,6 @@ def CutTimestamp(timestamp_file, point_list):
         start_index = seg_point["start_index"]
         end_index = seg_point["end_index"]
         output_timestamp_file = output_dir + "/" + os.path.basename(timestamp_file)
-        print(output_timestamp_file)
         timestamp_lines = ReadFile(timestamp_file)
         with open(output_timestamp_file, "w") as fout:
             for i in range(len(timestamp_lines)):
@@ -176,7 +177,7 @@ def CutVideoWithMpeg(video_path, point_list):
 
 
 def CutBasler(screen_files, screen_txts, segment_list):
-
+    start_time = time.time()
     print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Basler Video .........\n")
 
     point_list = []
@@ -206,19 +207,19 @@ def CutBasler(screen_files, screen_txts, segment_list):
 
         try:
             # cut videos
-            print("Cuttingbaslervideolog")
-            print(screen_file, point_list, screen_txt)
             CutVideos(screen_file, point_list)
             # cut timestamp
             CutTimestamp(screen_txt, point_list)
         except Exception as e:
-            print('cut video error')
+            print (getTime()+"\033[1;31m [ERROR]\033[0m Error while cutting Basler video ")
 
+    print(getTime() + "\033[1;32m [INFO]\033[0m Finished cutting " + str(
+        len(screen_files)) + " Basler Videos, consuming {:.3f}s".format(time.time() - start_time))
 
 def CutScreenCast(screen_files, screen_txts, segment_list):
 
     print(getTime() + "\033[1;32m [INFO]\033[0m Cutting Screencast Video .........\n")
-
+    start_time = time.time()
     point_list = []
 
     for i in range(len(screen_txts)):
@@ -230,9 +231,8 @@ def CutScreenCast(screen_files, screen_txts, segment_list):
             front_duration = seg_point["front_duration"] + 5
             behind_duration = seg_point["behind_duration"]
             output_dir = seg_point["output_dir"] + '/screen_cast'
-            print(output_dir)
+
             if not os.path.exists(output_dir):
-                print("checkpoint52")
                 os.mkdir(output_dir)
 
             start_index, end_index, start_time, end_time = JudgeTheStartAndEndOfScreencast(
@@ -255,6 +255,8 @@ def CutScreenCast(screen_files, screen_txts, segment_list):
 
         except Exception as e:
             print (getTime()+"\033[1;31m [ERROR]\033[0m While cutting screencast video ")
+    print(getTime() + "\033[1;32m [INFO]\033[0m Finished cutting " + str(
+        len(screen_files)) + " Screencast Videos, consuming {:.3f}s".format(time.time() - start_time))
 
 
 def JudgeTheStartAndEndOfBasler(timestamp_file, time_point, front_duration,
@@ -516,8 +518,9 @@ def CutRec(rec_file, point_list):
 
 
 def CutRecs(rec_files, segment_list):
-    print(getTime() + "\033[1;32m [INFO]\033[0m Cuting rec files......")
 
+    start_time = time.time()
+    print(getTime() + "\033[1;32m [INFO]\033[0m Cuting rec files......")
     for rec_file in rec_files:
         point_list = []
         print('\n.................', rec_file)
@@ -534,29 +537,30 @@ def CutRecs(rec_files, segment_list):
             point_list.append({"start_index": start_index, "end_index": end_index, "output_dir": output_dir})
 
         CutRec(rec_file, point_list)
-    print(getTime() + "\033[1;32m [INFO]\033[0m Completed cutting of Rec files \n")
+    print(getTime() + "\033[1;32m [INFO]\033[0m Finished cutting " + str(
+        len(rec_files)) + " .Rec files, consuming {:.3f}s".format(time.time() - start_time))
 
 
 def RecReadHeader(f):
     header = {}
     byte = f.read(1)
-    header["magic_number"] = int.from_bytes(byte, "big", signed="False")
+    header["magic_number"] = int.from_bytes(byte, "big", signed=False)
 
     byte = f.read(1)
-    header["topic_number"] = int.from_bytes(byte, "big", signed="False")
+    header["topic_number"] = int.from_bytes(byte, "big", signed=False)
     header["topics"] = []
     header["id2topic"] = {}
 
     for i in range(header["topic_number"]):
         cur_topic = {}
         byte = f.read(1)
-        cur_topic["topic_id"] = int.from_bytes(byte, "little", signed="False")
+        cur_topic["topic_id"] = int.from_bytes(byte, "little", signed=False)
         byte = f.read(4)
-        cur_topic["topic_max_length"] = int.from_bytes(byte, "little", signed="False")
+        cur_topic["topic_max_length"] = int.from_bytes(byte, "little", signed=False)
         byte = f.read(1)
-        cur_topic["topic_len"] = int.from_bytes(byte, "little", signed="False")
+        cur_topic["topic_len"] = int.from_bytes(byte, "little", signed=False)
         byte = f.read(cur_topic["topic_len"])
-        # print(str(cur_topic["topic_len"]))
+
         cur_topic["topic_data"] = "".join(
             byte.decode('ascii'))
         header["topics"].append(cur_topic)
@@ -564,7 +568,7 @@ def RecReadHeader(f):
 
     byte = f.read(4)
 
-    header["extra_len"] = int.from_bytes(byte, "little", signed="False")
+    header["extra_len"] = int.from_bytes(byte, "little", signed=False)
 
     header["extra_data"] = ''
     if header["extra_len"] > 0:
@@ -574,6 +578,7 @@ def RecReadHeader(f):
 
 
 def CutDpcbag(dpc_file, point_list):
+
     def expr_eval(expr):
         def eval_fn(topic, m, t):
             return eval(expr)
@@ -620,6 +625,7 @@ def CutDpcbag(dpc_file, point_list):
 
 
 def CutDpcs(dpc_files, segment_list):
+    start_time = time.time()
     print(getTime() + "\033[1;32m [INFO]\033[0m Cuting dpc bag......")
     point_list = []
 
@@ -639,7 +645,8 @@ def CutDpcs(dpc_files, segment_list):
         CutDpcbag(dpc_file, point_list)
 
     print(getTime() + "\033[1;32m [INFO]\033[0m Completed cutting of Dpc files\n")
-
+    print(getTime() + "\033[1;32m [INFO]\033[0m Finished cutting " + str(
+        len(dpc_files)) + " Basler Videos, consuming {:.3f}s".format(time.time() - start_time))
 
 def CutHmiFile(hmi_file, segment_list):
     for seg_point in segment_list:
@@ -710,7 +717,7 @@ def CutSimulatorScenario(data_dir, point_list):
             razor = os.path.join(config_["senseauto_path"],
                                  "senseauto-simulation/node/module/simulator/tools/scenario_log_tools/scenario_log_razor")
         else:
-            print("checkpoint53")
+
             print("cannot find the simulator_scenario_log_razor, exit")
         for seg_point in point_list:
             time_point = seg_point["time_point"]
@@ -829,8 +836,6 @@ def main(data_dir, segment_list):
     pool.join()
 
     pool = multiprocessing.Pool(processes=12)
-    if len(video_files) > 0 and os.path.exists(video_files[0]):
-        print("checkpoint")
 
     if len(hmi_files) > 0 and os.path.exists(hmi_files[0]):
         print(getTime() + "\033[1;32m [INFO]\033[0m Cutting HMI Video .........\n")

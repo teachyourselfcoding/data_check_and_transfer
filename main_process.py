@@ -349,12 +349,9 @@ class DataCollectionUpload():
         upload and then archive data
         :param dir_path_without: data path end without /
         '''
-        print("checkpoint36")
-        print(dir_path)
         tag_info = loadTag(dir_path)
-        print(tag_info)
         dir_name = os.path.split(dir_path)[1]
-        print(dir_name)
+
         try:
             self.data_upload(dir_path, tag_info, slice=False,upload = upload)
             archive_path = self.dirArchive(dir_path, tag_info)
@@ -903,7 +900,6 @@ class DataCollectionUpload():
                 shutil.move(input_data_path + '/' + dir_name, archive_path)
 
             except Exception as e:
-                print("checkpoint1001")
                 print (getTime()+"\033[1;31m [ERROR]\033[0m move dir to ARH failed ")
             return archive_path
         else:
@@ -918,7 +914,6 @@ class DataCollectionUpload():
             try:
                 shutil.move(''.join([input_data_path, '/', dir_name]), archive_path)
             except Exception as e:
-                print("checkpoint1002")
                 print (getTime()+"\033[1;31m [ERROR]\033[0m move dir to ARH failed ")
             return archive_path
 

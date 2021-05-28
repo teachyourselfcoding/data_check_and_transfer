@@ -359,10 +359,10 @@ def CutTimeBin(bin_file,timebin_list):
 def cutDpcs(rosbag_file,segment_list):
     if rosbag_file == []:
         return
-    print rosbag_file
+
     # for i in range(len(segment_list)):
     #     segment_list[i]["output_dir"] = os.path.join(segment_list[i]["output_dir"],'cv22')
-    print("checkpoint10010")
+
     CutDpcs(rosbag_file,segment_list)
 
 def processRosbag(rosjson_file,segment_list):
@@ -379,9 +379,8 @@ def processRosbag(rosjson_file,segment_list):
     os.system(json_to_ros_cmd)
     for i in range(len(segment_list)):
         segment_list[i]["output_dir"] = os.path.join(segment_list[i]["output_dir"],'cv22')
-    print("checkpoint1009")
     CutDpcs([output_ros_file],segment_list)
-    print "\033[1;32m [INFO]\033[0m process dpcs consuming {:.3f}s".format(time.time() - start_time)
+
 
 
 def judgeFileSizeAndExist(judge_file, check_size=0.2,upsize = 200000,false_check_reason=[],false_list = []):

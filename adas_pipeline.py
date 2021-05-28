@@ -158,8 +158,7 @@ def refineSegmentList(video_list,time_bin_list,segment_list):
 
 
 def moveAdasVideosAndBin(adas_path, video_list, segment_list):
-    print("checkpoint7")
-    print(segment_list)
+
     # video_tmp_path = 'cv22/normal'
     for i,segment_point in enumerate(segment_list):
         if os.path.isdir(os.path.join(adas_path,'canlog')):
@@ -193,7 +192,6 @@ def cutTimetxt(merge_video,splited_path,segment_point):
     i = 0
     with open(output_bin_file, 'w') as reuslt:
         for ts_file in ts_file_list:
-            print(ts_file)
             if os.path.getsize(ts_file) == 0:
                 continue
             reader = TimeReader(ts_file)
@@ -207,7 +205,6 @@ def cutTimetxt(merge_video,splited_path,segment_point):
 def JudgeStartAndEndFrame(start_index, end_index,frame_list):
     start_msg,end_msg = [],[]
     for index,interval in enumerate(frame_list):
-        print(index,interval)
         if start_index >= interval[0] and start_index <= interval[1]:
             start_msg = [index,start_index-interval[0]]
         if end_index >= interval[0] and end_index <= interval[1]:
